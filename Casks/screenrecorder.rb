@@ -16,11 +16,31 @@ cask "screenrecorder" do
     system_command "/usr/bin/xattr",
                    args: ["-cr", "#{appdir}/ScreenRecorder.app"],
                    sudo: false
+
+    # Create CLI symlinks from bundled binaries
+    system_command "/bin/ln",
+                   args: ["-sf", "#{appdir}/ScreenRecorder.app/Contents/MacOS/sr", "/usr/local/bin/sr"],
+                   sudo: true
+    system_command "/bin/ln",
+                   args: ["-sf", "#{appdir}/ScreenRecorder.app/Contents/MacOS/sr-mcp", "/usr/local/bin/sr-mcp"],
+                   sudo: true
+  end
+
+  uninstall_postflight do
+    # Remove CLI symlinks
+    system_command "/bin/rm",
+                   args: ["-f", "/usr/local/bin/sr"],
+                   sudo: true
+    system_command "/bin/rm",
+                   args: ["-f", "/usr/local/bin/sr-mcp"],
+                   sudo: true
   end
 
   zap trash: [
     "~/Library/Application Support/ScreenRecorder",
     "~/Library/Preferences/com.codeitlikemiley.screenrecorder.plist",
+    "~/Library/Preferences/com.codeitlikemiley.screenrecorder.shared.plist",
     "~/Library/Caches/com.codeitlikemiley.screenrecorder",
+    "~/.screenrecorder",
   ]
 end
