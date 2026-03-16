@@ -1,0 +1,172 @@
+name: Update Tap on New Release
+
+on:
+  repository_dispatch:
+    types: [update-tap]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (e.g., 1.0.1) — without 'v' prefix"
+        required: true
+
+jobs:
+  update:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determine version
+        id: version
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${{ github.event.client_payload.version }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Download release assets and compute SHAs
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -e
+          BASE_URL="https://github.com/codeitlikemiley/screenrecorder/releases/download/v${VERSION}"
+
+          echo "Downloading assets for v${VERSION}..."
+
+          curl -sL "${BASE_URL}/ScreenRecorder-${VERSION}.dmg" -o dmg.bin
+          curl -sL "${BASE_URL}/sr" -o sr.bin
+          curl -sL "${BASE_URL}/sr-mcp" -o sr-mcp.bin
+
+          DMG_SHA=$(shasum -a 256 dmg.bin | awk '{print $1}')
+          SR_SHA=$(shasum -a 256 sr.bin | awk '{print $1}')
+          MCP_SHA=$(shasum -a 256 sr-mcp.bin | awk '{print $1}')
+
+          echo "DMG SHA256: ${DMG_SHA}"
+          echo "SR  SHA256: ${SR_SHA}"
+          echo "MCP SHA256: ${MCP_SHA}"
+
+          echo "dmg_sha=${DMG_SHA}" >> $GITHUB_OUTPUT
+          echo "sr_sha=${SR_SHA}" >> $GITHUB_OUTPUT
+          echo "mcp_sha=${MCP_SHA}" >> $GITHUB_OUTPUT
+        id: sha
+
+      - name: Update Cask — screenrecorder
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          SHA: ${{ steps.sha.outputs.dmg_sha }}
+        run: |
+          cat > Casks/screenrecorder.rb << 'CASK'
+          cask "screenrecorder" do
+            version "VERSION_PLACEHOLDER"
+            sha256 "SHA_PLACEHOLDER"
+
+            url "https://github.com/codeitlikemiley/screenrecorder/releases/download/v#{version}/ScreenRecorder-#{version}.dmg"
+            name "Screen Recorder"
+            desc "AI-powered screen recording for developers with CLI and MCP support"
+            homepage "https://github.com/codeitlikemiley/screenrecorder"
+
+            depends_on macos: ">= :sonoma"
+
+            app "ScreenRecorder.app"
+
+            postflight do
+              system_command "/usr/bin/xattr",
+                             args: ["-cr", "#{appdir}/ScreenRecorder.app"],
+                             sudo: false
+            end
+
+            zap trash: [
+              "~/Library/Application Support/ScreenRecorder",
+              "~/Library/Preferences/com.codeitlikemiley.screenrecorder.plist",
+              "~/Library/Caches/com.codeitlikemiley.screenrecorder",
+            ]
+          end
+          CASK
+          sed -i '' "s/VERSION_PLACEHOLDER/${VERSION}/g" Casks/screenrecorder.rb
+          sed -i '' "s/SHA_PLACEHOLDER/${SHA}/g" Casks/screenrecorder.rb
+
+      - name: Update Formula — sr
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          SHA: ${{ steps.sha.outputs.sr_sha }}
+        run: |
+          cat > Formula/sr.rb << 'FORMULA'
+          class Sr < Formula
+            desc "CLI for Screen Recorder — control recording, screenshots, and annotations from the terminal"
+            homepage "https://github.com/codeitlikemiley/screenrecorder"
+            version "VERSION_PLACEHOLDER"
+            license "MIT"
+
+            on_macos do
+              on_arm do
+                url "https://github.com/codeitlikemiley/screenrecorder/releases/download/v#{version}/sr"
+                sha256 "SHA_PLACEHOLDER"
+              end
+              on_intel do
+                url "https://github.com/codeitlikemiley/screenrecorder/releases/download/v#{version}/sr"
+                sha256 "SHA_PLACEHOLDER"
+              end
+            end
+
+            depends_on macos: ">= :sonoma"
+
+            def install
+              bin.install "sr"
+            end
+
+            test do
+              assert_match "sr", shell_output("#{bin}/sr --help", 0)
+            end
+          end
+          FORMULA
+          sed -i '' "s/VERSION_PLACEHOLDER/${VERSION}/g" Formula/sr.rb
+          sed -i '' "s/SHA_PLACEHOLDER/${SHA}/g" Formula/sr.rb
+
+      - name: Update Formula — sr-mcp
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          SHA: ${{ steps.sha.outputs.mcp_sha }}
+        run: |
+          cat > Formula/sr-mcp.rb << 'FORMULA'
+          class SrMcp < Formula
+            desc "MCP server for Screen Recorder — lets AI agents control recording and screenshots"
+            homepage "https://github.com/codeitlikemiley/screenrecorder"
+            version "VERSION_PLACEHOLDER"
+            license "MIT"
+
+            on_macos do
+              on_arm do
+                url "https://github.com/codeitlikemiley/screenrecorder/releases/download/v#{version}/sr-mcp"
+                sha256 "SHA_PLACEHOLDER"
+              end
+              on_intel do
+                url "https://github.com/codeitlikemiley/screenrecorder/releases/download/v#{version}/sr-mcp"
+                sha256 "SHA_PLACEHOLDER"
+              end
+            end
+
+            depends_on macos: ">= :sonoma"
+
+            def install
+              bin.install "sr-mcp"
+            end
+
+            test do
+              assert_match "sr-mcp", shell_output("#{bin}/sr-mcp --help", 0)
+            end
+          end
+          FORMULA
+          sed -i '' "s/VERSION_PLACEHOLDER/${VERSION}/g" Formula/sr-mcp.rb
+          sed -i '' "s/SHA_PLACEHOLDER/${SHA}/g" Formula/sr-mcp.rb
+
+      - name: Commit and push
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore: bump to v${VERSION}" || echo "No changes"
+          git push
