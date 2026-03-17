@@ -183,6 +183,9 @@ jobs:
           sed -i '' "s/VERSION_PLACEHOLDER/${VERSION}/g" Formula/sr-mcp.rb
           sed -i '' "s/SHA_PLACEHOLDER/${SHA}/g" Formula/sr-mcp.rb
 
+      - name: Clean up downloaded binaries
+        run: rm -f dmg.bin sr.bin sr-mcp.bin
+
       - name: Commit and push
         env:
           VERSION: ${{ steps.version.outputs.version }}
@@ -192,3 +195,4 @@ jobs:
           git add -A
           git commit -m "chore: bump to v${VERSION}" || echo "No changes"
           git push
+
