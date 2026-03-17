@@ -4,37 +4,26 @@
 
 Homebrew formulae for [Screen Recorder](https://github.com/codeitlikemiley/screenrecorder) — AI-powered screen recording for developers.
 
-## Install Everything
+## Install
 
 ```bash
 brew tap codeitlikemiley/tap
 brew install --cask screenrecorder
-brew install sr sr-mcp
 ```
 
-## Available Packages
+That's it! This single command installs:
 
-### 🖥️ Screen Recorder App
-
-The full macOS app with UI, system tray, keyboard shortcuts, and annotation toolbar.
-
-```bash
-brew install --cask codeitlikemiley/tap/screenrecorder
-```
+- 🖥️ **Screen Recorder** — the full macOS app with UI, system tray, and annotation toolbar
+- 🔧 **`sr`** — CLI to control recording, screenshots, and annotations from the terminal
+- 🔌 **`sr-mcp`** — MCP server that lets AI agents (Claude, Cursor, etc.) control Screen Recorder
 
 > **Requires:** macOS 14 (Sonoma) or later · Apple Silicon & Intel
 
 ---
 
-### 🔧 `sr` — Command Line Interface
+## Usage
 
-Control Screen Recorder from the terminal. Start/stop recordings, take annotated screenshots, check status, and manage your recording library.
-
-```bash
-brew install codeitlikemiley/tap/sr
-```
-
-**Usage:**
+### CLI (`sr`)
 
 ```bash
 sr record              # Start recording
@@ -45,17 +34,9 @@ sr stop                # Stop recording
 sr activate KEY        # Activate your license
 ```
 
----
+### MCP Server (`sr-mcp`)
 
-### 🔌 `sr-mcp` — MCP Server
-
-Model Context Protocol server that turns Screen Recorder into an AI tool. Works with Claude, Cursor, and any MCP-compatible agent.
-
-```bash
-brew install codeitlikemiley/tap/sr-mcp
-```
-
-**MCP Configuration** (`claude_desktop_config.json`):
+Add to your MCP client config (e.g. `claude_desktop_config.json`):
 
 ```json
 {
@@ -86,14 +67,12 @@ The tap auto-updates via CI when a new version is [released](https://github.com/
 ```bash
 brew update
 brew upgrade --cask screenrecorder
-brew upgrade sr sr-mcp
 ```
 
 ## Uninstall
 
 ```bash
 brew uninstall --cask screenrecorder
-brew uninstall sr sr-mcp
 brew untap codeitlikemiley/tap
 ```
 
