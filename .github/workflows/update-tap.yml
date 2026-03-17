@@ -72,20 +72,42 @@ jobs:
             app "ScreenRecorder.app"
 
             postflight do
+              # Remove quarantine attribute so the app can launch without Gatekeeper prompts
               system_command "/usr/bin/xattr",
                              args: ["-cr", "#{appdir}/ScreenRecorder.app"],
                              sudo: false
+
+              # Create CLI symlinks from bundled binaries
+              system_command "/bin/ln",
+                             args: ["-sf", "#{appdir}/ScreenRecorder.app/Contents/MacOS/sr", "/usr/local/bin/sr"],
+                             sudo: true
+              system_command "/bin/ln",
+                             args: ["-sf", "#{appdir}/ScreenRecorder.app/Contents/MacOS/sr-mcp", "/usr/local/bin/sr-mcp"],
+                             sudo: true
+            end
+
+            uninstall_postflight do
+              # Remove CLI symlinks
+              system_command "/bin/rm",
+                             args: ["-f", "/usr/local/bin/sr"],
+                             sudo: true
+              system_command "/bin/rm",
+                             args: ["-f", "/usr/local/bin/sr-mcp"],
+                             sudo: true
             end
 
             zap trash: [
               "~/Library/Application Support/ScreenRecorder",
               "~/Library/Preferences/com.codeitlikemiley.screenrecorder.plist",
+              "~/Library/Preferences/com.codeitlikemiley.screenrecorder.shared.plist",
               "~/Library/Caches/com.codeitlikemiley.screenrecorder",
+              "~/.screenrecorder",
             ]
           end
           CASK
           sed -i '' "s/VERSION_PLACEHOLDER/${VERSION}/g" Casks/screenrecorder.rb
           sed -i '' "s/SHA_PLACEHOLDER/${SHA}/g" Casks/screenrecorder.rb
+
 
       - name: Update Formula — sr
         env:
