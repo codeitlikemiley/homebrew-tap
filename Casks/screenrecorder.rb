@@ -1,6 +1,6 @@
 cask "screenrecorder" do
   version "1.0.0"
-  sha256 "ef63d1865254737edab137f452402909980fe30245eba98797f61ca821a6bbf5"
+  sha256 "f33dc8bf7b3573d6829d6a9cbafc86987d24911d4102926d1a9369d4098abfd7"
 
   url "https://github.com/codeitlikemiley/screenrecorder/releases/download/v#{version}/ScreenRecorder-#{version}.dmg"
   name "Screen Recorder"

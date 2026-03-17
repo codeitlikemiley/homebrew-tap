@@ -7,11 +7,11 @@ class SrMcp < Formula
   on_macos do
     on_arm do
       url "https://github.com/codeitlikemiley/screenrecorder/releases/download/v#{version}/sr-mcp"
-      sha256 "f71746b59e0e0af28803eaf30a680d94b7a384bc31c5b4acbc765a52e7cfac3e"
+      sha256 "9369ee4180173d0d18f1777080e428ad502e896b4137f92fde5cab10cf0cf5d4"
     end
     on_intel do
       url "https://github.com/codeitlikemiley/screenrecorder/releases/download/v#{version}/sr-mcp"
-      sha256 "f71746b59e0e0af28803eaf30a680d94b7a384bc31c5b4acbc765a52e7cfac3e"
+      sha256 "9369ee4180173d0d18f1777080e428ad502e896b4137f92fde5cab10cf0cf5d4"
     end
   end
 

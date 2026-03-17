@@ -7,11 +7,11 @@ class Sr < Formula
   on_macos do
     on_arm do
       url "https://github.com/codeitlikemiley/screenrecorder/releases/download/v#{version}/sr"
-      sha256 "43d5b0f907e42f1ae1b84e8aca0eb33dc2ef8daf573c41f921ca64558bb2b267"
+      sha256 "efc732abb4226d58338246d016706fb739092afffed8e154d1ee1cda52f7aeb9"
     end
     on_intel do
       url "https://github.com/codeitlikemiley/screenrecorder/releases/download/v#{version}/sr"
-      sha256 "43d5b0f907e42f1ae1b84e8aca0eb33dc2ef8daf573c41f921ca64558bb2b267"
+      sha256 "efc732abb4226d58338246d016706fb739092afffed8e154d1ee1cda52f7aeb9"
     end
   end
 
